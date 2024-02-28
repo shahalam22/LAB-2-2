@@ -56,7 +56,8 @@ int main(){
                 printf("%d ", ans[i][j]);
             }
             printf("\n");
+        }else{
+            wait(NULL);
         }
     }
-    sleep(1);
 }

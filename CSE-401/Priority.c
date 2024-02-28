@@ -4,15 +4,13 @@ int main(){
     int n;
 
     FILE *fp;
-    fp = fopen("Priority.txt", "r");
+    fp = fopen("FCFS2.txt", "r");
     if (fp == NULL){
         printf("File not found!\n");
         return 0;
     }else{
         fscanf(fp, "%d", &n);
     }
-
-    printf("Number of processes: %d\n", n);
 
     int process[n], arrival_time[n], burst_time[n], priority[n], waiting_time[n], turn_around_time[n], completion_time[n], cpu_time[n];
 
@@ -23,10 +21,6 @@ int main(){
         fscanf(fp, "%d", &priority[i]);
     }
 
-    
-    // for(int i=0; i<n; i++){
-    //     printf("Arrival Time: %d, Burst Time: %d, Priority: %d\n", arrival_time[i], burst_time[i], priority[i]);
-    // }
 
     // sort using arrival time
     for(int i=0; i<n; i++){
@@ -51,74 +45,67 @@ int main(){
         }
     }
 
-    printf("\nAfter sorting using arrival time:\n");
+
+    // sorting using priority over sorted arrival time
     for(int i=0; i<n; i++){
-        printf("Arrival Time: %d, Burst Time: %d, Priority: %d\n", arrival_time[i], burst_time[i], priority[i]);
-    }
+        for(int j=i+1; j<n; j++){
+            if(arrival_time[i] == arrival_time[j]){
+                if(priority[i] < priority[j]){
+                    int temp = arrival_time[i];
+                    arrival_time[i] = arrival_time[j];
+                    arrival_time[j] = temp;
 
-    
+                    temp = burst_time[i];
+                    burst_time[i] = burst_time[j];
+                    burst_time[j] = temp;
 
-    // preemtive priority scheduling
-    int time = 0, completed = 0, curr_process = 0;
-    int temp_burst_time[n];
-    for(int i=0; i<n; i++){
-        temp_burst_time[i] = burst_time[i];
-    }
+                    temp = priority[i];
+                    priority[i] = priority[j];
+                    priority[j] = temp;
 
-    printf("\nGantt Chart -\n");
-
-    while(completed != n){
-        for(int i=0; i<n; i++){
-            if(arrival_time[i] <= time && temp_burst_time[i] > 0 && priority[i] > priority[curr_process]){
-                curr_process = i;
-            }
-        }
-
-        temp_burst_time[curr_process] -= 1;
-        time += 1;
-
-        if(temp_burst_time[curr_process] == 0){
-            completion_time[curr_process] = time;
-            completed += 1;
-            for(int i=0; i<n; i++){
-                if(arrival_time[i] <= time && temp_burst_time[i] > 0){
-                    curr_process = i;
-                    break;
+                    temp = process[i];
+                    process[i] = process[j];
+                    process[j] = temp;
                 }
             }
-        }
-
-        printf("P%d\t%d\n",process[curr_process], time);
+        }   
     }
     
 
-    printf("\nCompletion Time -\n");
+    // calculation of cancelation time
+    int time = 0;
     for(int i=0; i<n; i++){
-        printf("Completion Time of P%d - %d\n", process[i], completion_time[i]);
+        if(time > arrival_time[i]){
+            cpu_time[i] = time;
+            completion_time[i] = time + burst_time[i];
+            time = completion_time[i];
+        }else{
+            cpu_time[i] = arrival_time[i];
+            completion_time[i] = arrival_time[i] + burst_time[i];
+            time = completion_time[i];
+        }
     }
 
 
-    // rest of the code will remain same
+    // printing gnatt table
+    printf("\nGnatt Chart -\n");
+    printf("Process\t\tStart Time\tEnd Time\n");
+    for(int i=0; i<n; i++){
+        printf("P%d\t\t%d\t\t%d\n", process[i], cpu_time[i], completion_time[i]);
+    }
+
 
     // calculation of turn around time
     for(int i=0; i<n; i++){
         turn_around_time[i] = completion_time[i] - arrival_time[i];
     }
 
-    printf("\nTurn Around Time -\n");
-    for(int i=0; i<n; i++){
-        printf("Turn Around Time of P%d - %d\n", process[i], turn_around_time[i]);
-    }
 
     // calculation of waiting time
     for(int i=0; i<n; i++){
         waiting_time[i] = turn_around_time[i] - burst_time[i];
     }
 
-    printf("\nWaiting Time -\n");
-    for(int i=0; i<n; i++){
-        printf("Waiting Time of P%d - %d\n", process[i], waiting_time[i]);
-    }
 
     // average turn around time
     float avg_turn_around_time = 0;
@@ -128,6 +115,7 @@ int main(){
     avg_turn_around_time /= n;
 
     printf("\nAverage Turn Around Time: %.2f\n", avg_turn_around_time);
+
 
     // average waiting time
     float avg_waiting_time = 0;
@@ -141,24 +129,3 @@ int main(){
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
