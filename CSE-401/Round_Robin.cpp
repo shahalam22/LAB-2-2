@@ -12,12 +12,12 @@ bool inQueue(queue<int> q, int p){
 }
 
 int main(){
-    int n, quantum_time;
+    int n, quantum_time, completed = 0;
 
     cout << "Enter the quantum time: ";
     cin >> quantum_time;
 
-    ifstream file("FCFS.txt");
+    ifstream file("FCFS2.txt");
     file >> n;
 
     int process[n], arrival_time[n], burst_time[n], priority[n], waiting_time[n], turn_around_time[n], completion_time[n];
@@ -86,6 +86,8 @@ int main(){
             }
             if(demo_burst_time[index] != 0){
                 ready.push(p);
+            }else{
+                completed++;
             }
 
             cout << "P" << p << "\t\t" << temp_time << "\t\t" << time << endl;
@@ -102,7 +104,19 @@ int main(){
                 }
             }
 
+            completed++;
+
             cout << "P" << p << "\t\t" << temp_time << "\t\t" << time << endl;
+        }
+
+        if(completed != n && ready.empty()){
+            for(int i=0; i<n; i++){
+                if(demo_burst_time[i]!=0){
+                    ready.push(process[i]);
+                    time = arrival_time[i];
+                    break;
+                }
+            }
         }
     }
 
