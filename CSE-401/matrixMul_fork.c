@@ -1,95 +1,3 @@
-
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <sys/types.h>
-// #include <unistd.h>
-
-// void multiply_row(long long int matrix1[][10], long long int matrix2[][10], long long int result[][10], int row, int col) {
-//     for (int i = 0; i < col; i++) {
-//         long long int product = 0;
-//         for (int j = 0; j < col; j++) {
-//             if (matrix1[row][j] < 0 || matrix2[j][i] < 0) {
-//                 product -= matrix1[row][j] * matrix2[j][i];  // Handle negative numbers separately
-//             } else {
-//                 product += matrix1[row][j] * matrix2[j][i];
-//             }
-//         }
-//         result[row][i] = product;
-//     }
-// }
-
-// int main() {
-//     int m, n, p, q;
-
-//     printf("Enter dimensions of matrix 1: ");
-//     scanf("%d %d", &m, &n);
-//     printf("Enter dimensions of matrix 2: ");
-//     scanf("%d %d", &p, &q);
-
-//     if (n != p) {
-//         printf("Matrices cannot be multiplied!\n");
-//         return 1;
-//     }
-
-//     long long int matrix1[10][10], matrix2[10][10], result[10][10] = {
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//         {0,0,0,0,0,0,0,0,0,0},
-//     };
-
-//     // Input matrices
-//     printf("Enter elements of matrix 1:\n");
-//     for (int i = 0; i < m; i++) {
-//         for (int j = 0; j < n; j++) {
-//             scanf("%lld", &matrix1[i][j]); // Use %lld for long long int
-//         }
-//     }
-//     printf("Enter elements of matrix 2:\n");
-//     for (int i = 0; i < p; i++) {
-//         for (int j = 0; j < q; j++) {
-//             scanf("%lld", &matrix2[i][j]); // Use %lld for long long int
-//         }
-//     }
-
-//     // Perform multiplication using fork for each row
-//     for (int i = 0; i < m; i++) {
-//         pid_t pid = fork();
-
-//         if (pid < 0) {
-//             // Fork failed
-//             printf("Fork failed!\n");
-//             return 1;
-//         } else if (pid == 0) {
-//             // Child process
-//             multiply_row(matrix1, matrix2, result, i, q);
-//             exit(0);  // Child process exits
-//         } else {
-//             // Parent process
-//             wait(NULL);  // Wait for child process to finish
-//         }
-//     }
-
-//     // Print the result matrix
-//     printf("\nResultant matrix:\n");
-//     for (int i = 0; i < m; i++) {
-//         for (int j = 0; j < q; j++) {
-//             printf("%lld ", result[i][j]);
-//         }
-//         printf("\n");
-//     }
-
-//     return 0;
-// }
-
-
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -148,8 +56,7 @@ int main(){
                 printf("%d ", ans[i][j]);
             }
             printf("\n");
-        }else{
-            wait(NULL);
+            exit(0);
         }
     }
 }

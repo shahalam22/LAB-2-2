@@ -87,12 +87,26 @@ int main(){
     }
 
 
-    // printing gnatt chart
-    printf("\nGnatt Chart:\n");
-    printf("Process\t\tStart Time\tEnd Time\n");
+    // // printing gnatt chart
+    // printf("\nGnatt Chart:\n");
+    // printf("Process\t\tStart Time\tEnd Time\n");
+    // for(int i=0; i<n; i++){
+    //     printf("P%d\t\t%d\t\t%d\n", process[i], cpu_time[i], completion_time[i]);
+    // }
+
+    // Gantt Chart
+    printf("|");
     for(int i=0; i<n; i++){
-        printf("P%d\t\t%d\t\t%d\n", process[i], cpu_time[i], completion_time[i]);
+        printf("---p%d---|", process[i]);
     }
+
+    printf("\n%d", arrival_time[0]);
+    for(int i=0; i<n; i++){
+        printf("%9d", completion_time[i]);
+    }
+
+    printf("\n");
+    
 
     // calculation of turn around time
     for(int i=0; i<n; i++){

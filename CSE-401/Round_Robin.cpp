@@ -120,10 +120,4 @@ int main(){
         }
     }
 
-
-    // for(int i=0; i<n; i++){
-    //     turn_around_time[i] = completion_time[i] - arrival_time[i];
-    //     waiting_time[i] = turn_around_time[i] - burst_time[i];
-    // }
-
 }
