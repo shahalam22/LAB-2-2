@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 unsigned char s[256] = 
  {
@@ -171,17 +172,19 @@ unsigned char * g (unsigned char wInput[4], int counter)
     unsigned char * wReady = malloc(4);
     unsigned char temp[4] = "";
     unsigned char a = wInput[0];
+    
+    //shift row inside g
     for(int i =0;i<3; i++)
     {
         temp[i] = wInput[(i+1)];
     }
     temp[3] = a;
 
+    //byte substitution inside g
     for (int i =0; i<4;i++)
         temp[i] = s[temp[i]];
 
     //unsigned char array formed for xoring with rcon
-
     unsigned char array2[4] = "";
     array2[0] = rcon[counter];
     array2[1] = array2[2] = array2[3] = 0x00;
@@ -207,9 +210,11 @@ unsigned char * keyExpansion(unsigned char key[16])
     
     int byteCount = 0; //this is to keep a count on the bytes of the expandedKey array
     
+    // copying key into expanded key for first 16 bits
     for (int i=0;i<16;i++)
             expandedKey[i] = key[i];
 
+    // creating first word using expanded key
     for(int j=0;j<4;j++)
     {
          for(int k=0;k<4;k++)
@@ -218,6 +223,8 @@ unsigned char * keyExpansion(unsigned char key[16])
             byteCount++;
          }
     }
+
+    // key expansion using g function
     for(int l=4;l<44;l++)
     {
         if((l%4)==0)
@@ -237,6 +244,7 @@ unsigned char * keyExpansion(unsigned char key[16])
     }
 
     int loc=0;
+
     for(int i=0;i<44;i++ )
     {
         for(int j=0;j<4;j++)
@@ -341,7 +349,7 @@ void inverseByteSubShiftRow(unsigned char * plainText)
 }
 
 
-void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsigned char * cipher)
+void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsigned char * cipher, int k)
 {
     unsigned char * state = malloc(16);
     //unsigned char * expandedKey = malloc(176);
@@ -349,7 +357,7 @@ void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsig
     //key addition for the first round
     for (int i = 0; i < 16; ++i)
     {
-     state[i] = plainText[i] ^ expandedKey[i];
+     state[i] = plainText[k*16 + i] ^ expandedKey[i];
     }
 
     //now the 9 rounds begin
@@ -371,17 +379,17 @@ void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsig
     byteSubShiftRow(state);
     for(int i=0; i<16;i++)
     {
-        cipher[i] = state[i] ^ expandedKey[i+160];
+        cipher[k*16 + i] = state[i] ^ expandedKey[i+160];
     }
     free(state);
 }
 
-void AESDecryption(unsigned char * cipher, unsigned char * expandedKey, unsigned char * plainText)
+void AESDecryption(unsigned char * cipher, unsigned char * expandedKey, unsigned char * plainText, int k)
 {
     unsigned char * state = malloc(16);
     //key whitening
     for (int i = 0; i < 16; ++i)
-        state[i] = cipher[i] ^ expandedKey[160+i];
+        state[i] = cipher[k*16 + i] ^ expandedKey[160+i];
 
     // 9 rounds of decryption
     for (int rounds = 9; rounds >0 ; rounds--)
@@ -401,7 +409,77 @@ void AESDecryption(unsigned char * cipher, unsigned char * expandedKey, unsigned
     //final 10th round of decryption
     inverseByteSubShiftRow(state);
     for(int i =0; i<16; i++)
-        plainText[i] = state[i] ^ expandedKey[i];
+        plainText[k*16 + i] = state[i] ^ expandedKey[i];
 
     free(state);
+}
+
+char ascii_to_hex(char ch) {
+  static const char hex_table[] = "0123456789ABCDEF";
+  int value = (unsigned char)ch;  // Cast to unsigned char for consistent behavior
+
+  // Check for non-printable characters (optional)
+  if (value < 0x20 || value > 0x7E) {
+    return '?'; // Or any other indicator for non-printable characters
+  }
+
+  int upper_digit = value / 16;
+  int lower_digit = value % 16;
+
+  return hex_table[upper_digit * 16 + lower_digit];
+}
+
+int main(){
+    unsigned char Key[16] = {0x2b,0x28,0xab,0x09,0x7e,0xae,0xf7,0xcf,0x15,0xd2,0x15,0x4f,0x16,0xa6,0x88,0x3c};
+    unsigned char plainText[100];
+    char str[100];
+
+    for(int i=0; i<100; i++){
+        plainText[i] = 0X00;
+    }
+    
+    printf("Enter the plain text: ");
+    scanf("%99[^\n]", str);
+
+    int length = strlen(str);
+
+    for(int i=0; i<length; i++){
+        plainText[i] = ascii_to_hex(str[i]);
+    }
+
+    unsigned char * cipher = malloc(length);
+    unsigned char * decryptedText = malloc(length);
+    unsigned char * expandedKey = malloc(176);
+    expandedKey = keyExpansion(Key);
+
+    for(int i=0; i<(length/16 + 1); i++){
+        AESEncryption(plainText, expandedKey, cipher, i);
+    }
+
+    for(int i=0; i<(length/16 + 1); i++){
+        AESDecryption(cipher, expandedKey, decryptedText, i);
+    }
+
+    printf("The original plain text is: ");
+    for (int i = 0; i < length; ++i)
+    {
+        printf("%02x ", plainText[i]);
+    }
+    printf("\n");
+
+    printf("The encrypted text is: ");
+    for (int i = 0; i < length; ++i)
+    {
+        printf("%02x ", cipher[i]);
+    }
+    printf("\n");
+
+    printf("The decrypted text is: ");
+    for (int i = 0; i < length; ++i)
+    {
+        printf("%02x ", decryptedText[i]);
+    }
+    printf("\n");
+
+    return 0;
 }
