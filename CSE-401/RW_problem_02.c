@@ -92,6 +92,8 @@ int main() {
     }
     
     sem_destroy(&rmutex);
+    sem_destroy(&wmutex);
+    sem_destroy(&readTry);
     sem_destroy(&resource);
     
     return 0;
