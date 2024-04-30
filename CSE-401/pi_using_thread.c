@@ -46,8 +46,7 @@ void *runner(void *param) {
 		y = generateRandomNumber();
 		dis = sqrt((x*x)+(y*y));
 		
-		if(dis<1){
-			
+		if(dis<1){		
 			circle++;
 			square++;
 		}else{
