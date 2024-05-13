@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 unsigned char s[256] = 
  {
@@ -274,6 +275,7 @@ void mixColumns(unsigned char * plainText)
     }
     free(tempC);
 }
+
 void inverseMixedColumn (unsigned char * plainText)
 {
     unsigned char * tempC = malloc(18);
@@ -291,6 +293,7 @@ void inverseMixedColumn (unsigned char * plainText)
     }
     free(tempC);
 }
+
 void byteSubShiftRow(unsigned char * state)
 {
 
@@ -322,6 +325,7 @@ void byteSubShiftRow(unsigned char * state)
         state[i] = tmp[i];
     }
 }
+
 void inverseByteSubShiftRow(unsigned char * plainText)
 {
     unsigned char * temp = malloc(16);
@@ -349,15 +353,12 @@ void inverseByteSubShiftRow(unsigned char * plainText)
 }
 
 
-void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsigned char * cipher, int k)
+void AESEncryption(unsigned char * plainText, unsigned char * temp, unsigned char * expandedKey, unsigned char * cipher, int k)
 {
     unsigned char * state = malloc(16);
-    //unsigned char * expandedKey = malloc(176);
-    //expandedKey = keyExpansion(Key);
-    //key addition for the first round
     for (int i = 0; i < 16; ++i)
     {
-     state[i] = plainText[k*16 + i] ^ expandedKey[i];
+     state[i] = temp[i] ^ expandedKey[i];
     }
 
     //now the 9 rounds begin
@@ -381,6 +382,17 @@ void AESEncryption(unsigned char * plainText, unsigned char * expandedKey, unsig
     {
         cipher[k*16 + i] = state[i] ^ expandedKey[i+160];
     }
+
+    for(int i=0; i<16; i++)
+    {
+        temp[i] = cipher[k*16 + i];
+    }
+
+    for(int i=0; i<16; i++)
+    {
+        cipher[k*16 + i] ^= plainText[k*16 + i];
+    }
+
     free(state);
 }
 
@@ -415,71 +427,147 @@ void AESDecryption(unsigned char * cipher, unsigned char * expandedKey, unsigned
 }
 
 char ascii_to_hex(char ch) {
-  static const char hex_table[] = "0123456789ABCDEF";
-  int value = (unsigned char)ch;  // Cast to unsigned char for consistent behavior
+    // Convert ASCII value to hexadecimal
+    char hex = (ch >= '0' && ch <= '9') ? ch - '0' : (ch & 0x0F) + 9;
+    hex &= 0x0F; // Make sure it's in the range 0-15
+    return hex;
+}
 
-  // Check for non-printable characters (optional)
-  if (value < 0x20 || value > 0x7E) {
-    return '?'; // Or any other indicator for non-printable characters
+char hex_to_ascii(char hex) {
+    // Convert hexadecimal to ASCII
+    char ch = (hex <= 9) ? hex + '0' : (hex - 10) + 'A';
+    return ch;
+}
+
+int findFileSize(char *str){
+    FILE *file;
+    long fileSize;
+
+    file = fopen(str, "r");
+
+    if(file == NULL){
+        perror("Error Opening File");
+        return 1;
+    }
+
+    // Move the file pointer to the end
+    if (fseek(file, 0, SEEK_END) != 0) {
+      perror("Error seeking in file");
+      fclose(file);
+      return 1;
+    }
+
+    // Get the current position (file size in bytes)
+    fileSize = ftell(file);
+
+    if (fileSize == -1) {
+      perror("Error getting file position");
+      fclose(file);
+      return 1;
+    }
+
+    fclose(file);
+
+    return fileSize;
+}
+
+// Function to generate a random IV
+void generate_iv(unsigned char *iv) {
+  // Seed the random number generator with current time (not ideal for production)
+  srand(time(NULL));
+
+  // Generate random bytes for the IV
+  for (int i = 0; i < 16; i++) {
+    iv[i] = (unsigned char)rand();
   }
-
-  int upper_digit = value / 16;
-  int lower_digit = value % 16;
-
-  return hex_table[upper_digit * 16 + lower_digit];
 }
 
 int main(){
-    unsigned char Key[16] = {0x2b,0x28,0xab,0x09,0x7e,0xae,0xf7,0xcf,0x15,0xd2,0x15,0x4f,0x16,0xa6,0x88,0x3c};
-    unsigned char plainText[100];
-    char str[100];
 
-    for(int i=0; i<100; i++){
+    long int filesize = findFileSize("AESinput.txt");
+    // printf("File size : %ld\n", filesize);
+ 
+    unsigned char Key[16] = {0x2b,0x28,0xab,0x09,0x7e,0xae,0xf7,0xcf,0x15,0xd2,0x15,0x4f,0x16,0xa6,0x88,0x3c};
+    unsigned char plainText[filesize];
+
+    for(int i=0; i<filesize; i++){
         plainText[i] = 0X00;
     }
+
+// Reading Input File
+    FILE *fp;
+    fp = fopen("AESinput.txt", "r");
     
-    printf("Enter the plain text: ");
-    scanf("%99[^\n]", str);
-
-    int length = strlen(str);
-
-    for(int i=0; i<length; i++){
-        plainText[i] = ascii_to_hex(str[i]);
+    if (fp == NULL) {
+      printf("Error opening file!\n");
+      return 1;
     }
 
-    unsigned char * cipher = malloc(length);
-    unsigned char * decryptedText = malloc(length);
+    fgets(plainText, filesize, fp);
+    fclose(fp);
+
+// Declaring texts
+    unsigned char * cipher = malloc(filesize);
+    unsigned char * decryptedText = malloc(filesize);
     unsigned char * expandedKey = malloc(176);
     expandedKey = keyExpansion(Key);
 
-    for(int i=0; i<(length/16 + 1); i++){
-        AESEncryption(plainText, expandedKey, cipher, i);
+
+    unsigned char *iv = (unsigned char *)malloc(16);
+    unsigned char *temp = (unsigned char *)malloc(16);
+    generate_iv(iv);
+
+
+// encrypting blocks
+    for(int i=0; i<(filesize/16 + 1); i++){
+        if(i==0){
+            for(int j=0; j<16; j++){
+                temp[j] = iv[j];
+            }
+        }
+        AESEncryption(plainText, temp, expandedKey, cipher, i);
     }
 
-    for(int i=0; i<(length/16 + 1); i++){
-        AESDecryption(cipher, expandedKey, decryptedText, i);
+// deprypting blocks
+    for(int i=0; i<(filesize/16 + 1); i++){
+        if(i==0){
+            for(int j=0; j<16; j++){
+                temp[j] = iv[j];
+            }
+        }
+        AESEncryption(cipher, temp, expandedKey, decryptedText, i);
     }
 
-    // printf("The original plain text is: ");
-    // for (int i = 0; i < length; ++i)
-    // {
-    //     printf("%02x ", plainText[i]);
-    // }
-    // printf("\n");
+// writing Output file
+    FILE *fpw;
+    fpw = fopen("AESinput.txt", "w");
 
-    // printf("The encrypted text is: ");
-    // for (int i = 0; i < length; ++i)
-    // {
-    //     printf("%02x ", cipher[i]);
-    // }
-    // printf("\n");
+    if (fpw == NULL) {
+      printf("Error opening file!\n");
+      return 1;
+    }
 
-    // printf("The decrypted text is: ");
-    // for (int i = 0; i < length; ++i)
-    // {
-    //     printf("%02x ", decryptedText[i]);
-    // }
-    // printf("\n");
+    fputs(cipher, fpw);
+    fclose(fpw);
+
+
+    printf("The original plain text is: ");
+    for (int i = 0; i < filesize; ++i){
+        printf("%c", plainText[i]);
+    }
+    printf("\n\n");
+
+    printf("The encrypted text is: ");
+    for (int i = 0; i < filesize; ++i){
+        printf("%c", cipher[i]);
+    }
+    printf("\n\n");
+
+    printf("The decrypted text is: ");
+    for (int i = 0; i < filesize; ++i){
+        printf("%c", decryptedText[i]);
+    }
+    printf("\n\n");
 
     return 0;
 }
