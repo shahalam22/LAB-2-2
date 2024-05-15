@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <fstream>
 using namespace std;
 typedef unsigned long long int int64;
 
@@ -349,11 +350,24 @@ string SHA512(string myString){
 // Main Code
 int main()
 {
-    // Input
-    string S = "Shah Alam Abir";
+    string S;
+
+    fstream file;
+    file.open("sha512.txt");
+
+    if(!file) {
+        cout << "File not found" << endl;
+        return 0;
+    } else {
+        stringstream buffer;
+        buffer << file.rdbuf();
+        S = buffer.str();
+    }
+
+    file.close();
 
     // Function Call
-    cout << "Main Text : " << S << endl;
+    cout << "Main Text : " << S << endl << endl;
     cout << "Hash Text : " << SHA512(S) << endl;
 
     return 0;
