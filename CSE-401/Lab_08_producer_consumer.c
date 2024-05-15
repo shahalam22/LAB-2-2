@@ -11,7 +11,7 @@ sem_t mutex;
 sem_t empty;
 sem_t full;
 
-void producer(void* arg){
+void* producer(void* arg){
     int item;
     while(1){
         sleep(1);
@@ -31,7 +31,7 @@ void producer(void* arg){
     }
 }
 
-void consumer(void* arg){
+void* consumer(void* arg){
     int item;
     while(1){
         sem_wait(&full);
