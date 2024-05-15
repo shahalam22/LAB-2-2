@@ -13,7 +13,7 @@ sem_t resource;
 sem_t rmutex;     
 int readcount = 0;    
 
-void writer() {
+void* writer() {
     sem_wait(&resource);
     
     printf("Writer %lu is writing...\n", pthread_self() % 10);
@@ -22,7 +22,7 @@ void writer() {
     sem_post(&resource);
 }
 
-void reader() {
+void* reader() {
     sem_wait(&rmutex);    
     
     readcount++;          

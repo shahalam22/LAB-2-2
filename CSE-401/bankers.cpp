@@ -73,19 +73,4 @@ int main(){
         for(int i=0;i<p;i++) cout<<seq[i]+1<<" ";
     }
     cout<<endl;
-
-
- 
-
-
-
-
-
-
-
-
-
-   
-
-
 }
