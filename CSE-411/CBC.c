@@ -549,23 +549,45 @@ int main(){
     fclose(fpw);
 
 
-    printf("The original plain text is: ");
-    for (int i = 0; i < filesize; ++i){
-        printf("%c", plainText[i]);
-    }
-    printf("\n\n");
+    // printf("The original plain text is: ");
+    // for (int i = 0; i < filesize; ++i){
+    //     printf("%c", plainText[i]);
+    // }
+    // printf("\n\n");
 
-    printf("The encrypted text is: ");
-    for (int i = 0; i < filesize; ++i){
-        printf("%c", cipher[i]);
-    }
-    printf("\n\n");
+    // printf("The encrypted text is: ");
+    // for (int i = 0; i < filesize; ++i){
+    //     printf("%c", cipher[i]);
+    // }
+    // printf("\n\n");
 
-    printf("The decrypted text is: ");
-    for (int i = 0; i < filesize; ++i){
-        printf("%c", decryptedText[i]);
-    }
-    printf("\n\n");
+    // printf("The decrypted text is: ");
+    // for (int i = 0; i < filesize; ++i){
+    //     printf("%c", decryptedText[i]);
+    // }
+    // printf("\n\n");
+
+
+    // printf("The original plain text is: ");
+    // for (int i = 0; i < filesize; ++i)
+    // {
+    //     printf("%02x ", plainText[i]);
+    // }
+    // printf("\n");
+
+    // printf("The encrypted text is: ");
+    // for (int i = 0; i < filesize; ++i)
+    // {
+    //     printf("%02x ", cipher[i]);
+    // }
+    // printf("\n");
+
+    // printf("The decrypted text is: ");
+    // for (int i = 0; i < filesize; ++i)
+    // {
+    //     printf("%02x ", decryptedText[i]);
+    // }
+    // printf("\n");
 
     return 0;
 }
